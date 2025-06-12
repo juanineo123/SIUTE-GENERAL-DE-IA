@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrainCircuit, FileText, CheckSquare, Users, GitMerge, Zap, ArrowRight, X, Loader2, Code } from 'lucide-react';
 
-// --- Global Styles for Animations ---
+// --- Global Styles for Animations (Sin cambios) ---
 const GlobalStyles = () => (
   <style>{`
     @keyframes fade-in-down {
@@ -27,8 +27,6 @@ const WelcomePage = ({ onEnter }) => (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-sky-100 text-center overflow-hidden">
         <GlobalStyles />
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
-        
-        {/* Main Content Area */}
         <main className="relative z-10 flex flex-col items-center justify-center flex-grow p-8">
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-indigo-700 tracking-tight animate-fade-in-down" style={{ animationDelay: '0.2s' }}>
@@ -51,8 +49,6 @@ const WelcomePage = ({ onEnter }) => (
                 </div>
             </div>
         </main>
-
-        {/* Footer Area */}
         <footer className="relative z-10 py-6 text-sm text-gray-600 animate-fade-in-down" style={{ animationDelay: '1s' }}>
             Un proyecto de <strong className="font-semibold text-gray-800">Juan Manuel Caicedo Oliva</strong> con la asistencia de <strong className="font-semibold text-gray-800">Gemini</strong>.
         </footer>
@@ -74,19 +70,21 @@ const Header = () => (
     </header>
 );
 
-const IframeModuleCard = ({ icon, title, description, onClick, disabled = false }) => (
+// ***** MODIFICACIÓN 1: El componente ahora acepta una clase para el fondo de la tarjeta *****
+const IframeModuleCard = ({ icon, title, description, onClick, disabled = false, iconColor = 'bg-indigo-100 text-indigo-600', hoverBorderColor = 'hover:border-indigo-500', cardBgColor = 'bg-white' }) => (
     <button
         onClick={onClick}
         disabled={disabled}
-        className={`group block h-full rounded-xl border bg-white p-6 text-center shadow-md transition-all duration-300 ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-100' : 'hover:border-indigo-500 hover:shadow-xl hover:-translate-y-1'}`}
+        // ***** Se aplican los colores de fondo y borde *****
+        className={`group block h-full rounded-xl border p-6 text-center shadow-md transition-all duration-300 ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-100' : `${cardBgColor} ${hoverBorderColor} hover:shadow-xl hover:-translate-y-1`}`}
     >
-        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${disabled ? 'bg-gray-200 text-gray-500' : 'bg-indigo-100 text-indigo-600'}`}>
+        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${disabled ? 'bg-gray-200 text-gray-500' : iconColor}`}>
             {icon}
         </div>
         <h3 className="mt-4 text-xl font-semibold text-gray-800">{title}</h3>
         <p className="mt-2 text-sm text-gray-600">{description}</p>
         {!disabled && (
-            <span className="mt-4 inline-block text-indigo-600 font-semibold transition-all duration-300 group-hover:text-indigo-800">
+            <span className={`mt-4 inline-block font-semibold transition-all duration-300 ${iconColor.replace('bg-', 'text-').replace('-100', '-600')}`}>
                 Abrir Herramienta →
             </span>
         )}
@@ -94,16 +92,15 @@ const IframeModuleCard = ({ icon, title, description, onClick, disabled = false 
 );
 
 
-// --- Main Application Components ---
-
 const Dashboard = ({ setView }) => {
+    // ***** MODIFICACIÓN 2: Se añade 'cardBgColor' a cada herramienta con un color suave *****
     const tools = [
-        { id: 1, title: "Generador de Sesiones", description: "Crea sesiones de aprendizaje completas.", url: "https://glistening-starlight-1588bf.netlify.app/", icon: <BrainCircuit size={32} /> },
-        { id: 2, title: "Generador de Unidades", description: "Elabora unidades de aprendizaje estructuradas.", url: "https://vocal-cendol-d4bf47.netlify.app/", icon: <FileText size={32} /> },
-        { id: 3, title: "Fichas y Exámenes", description: "Diseña material de evaluación y práctica.", url: "https://jazzy-moxie-e34a66.netlify.app/", icon: <CheckSquare size={32} /> },
-        { id: 4, title: "Generador de Solicitudes", description: "Redacta documentos administrativos.", url: "https://fancy-profiterole-01445b.netlify.app/", icon: <FileText size={32} /> },
-        { id: 5, title: "Solucionador de Conflictos", description: "Asistente para mediación de conflictos.", url: "https://elegant-duckanoo-d702fe.netlify.app/", icon: <Users size={32} /> },
-        { id: 6, title: "Proyectos Integrados", description: "Define proyectos basados en tu realidad local.", url: "https://jocular-concha-e30cbd.netlify.app/", icon: <GitMerge size={32} /> },
+        { id: 1, title: "Generador de Sesiones", description: "Crea sesiones de aprendizaje completas.", url: "https://glistening-starlight-1588bf.netlify.app/", icon: <BrainCircuit size={32} />, iconColor: "bg-sky-100 text-sky-600", hoverBorderColor: "hover:border-sky-500", cardBgColor: "bg-sky-50" },
+        { id: 2, title: "Generador de Unidades", description: "Elabora unidades de aprendizaje estructuradas.", url: "https://vocal-cendol-d4bf47.netlify.app/", icon: <FileText size={32} />, iconColor: "bg-emerald-100 text-emerald-600", hoverBorderColor: "hover:border-emerald-500", cardBgColor: "bg-emerald-50" },
+        { id: 3, title: "Fichas y Exámenes", description: "Diseña material de evaluación y práctica.", url: "https://jazzy-moxie-e34a66.netlify.app/", icon: <CheckSquare size={32} />, iconColor: "bg-amber-100 text-amber-600", hoverBorderColor: "hover:border-amber-500", cardBgColor: "bg-amber-50" },
+        { id: 4, title: "Generador de Solicitudes", description: "Redacta documentos administrativos.", url: "https://fancy-profiterole-01445b.netlify.app/", icon: <FileText size={32} />, iconColor: "bg-rose-100 text-rose-600", hoverBorderColor: "hover:border-rose-500", cardBgColor: "bg-rose-50" },
+        { id: 5, title: "Solucionador de Conflictos", description: "Asistente para mediación de conflictos.", url: "https://elegant-duckanoo-d702fe.netlify.app/", icon: <Users size={32} />, iconColor: "bg-violet-100 text-violet-600", hoverBorderColor: "hover:border-violet-500", cardBgColor: "bg-violet-50" },
+        { id: 6, title: "Proyectos Integrados", description: "Define proyectos basados en tu realidad local.", url: "https://jocular-concha-e30cbd.netlify.app/", icon: <GitMerge size={32} />, iconColor: "bg-teal-100 text-teal-600", hoverBorderColor: "hover:border-teal-500", cardBgColor: "bg-teal-50" },
     ];
 
     return (
@@ -119,6 +116,9 @@ const Dashboard = ({ setView }) => {
                         title={tool.title}
                         description={tool.description}
                         onClick={() => setView(tool.url)}
+                        iconColor={tool.iconColor}
+                        hoverBorderColor={tool.hoverBorderColor}
+                        cardBgColor={tool.cardBgColor}
                     />
                 ))}
                 <IframeModuleCard
@@ -138,9 +138,10 @@ const Dashboard = ({ setView }) => {
     );
 };
 
+// --- El resto del código permanece exactamente igual ---
+
 const IframeView = ({ url, setView }) => {
     const [loading, setLoading] = useState(true);
-
     const getToolTitle = (currentUrl) => {
         const toolMap = {
             "https://glistening-starlight-1588bf.netlify.app/": "Generador de Sesiones",
@@ -152,7 +153,6 @@ const IframeView = ({ url, setView }) => {
         };
         return toolMap[currentUrl] || "Herramienta";
     };
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-30 flex items-center justify-center p-2 sm:p-4">
             <div className="relative w-full h-full max-w-screen-2xl bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
@@ -180,7 +180,6 @@ const IframeView = ({ url, setView }) => {
         </div>
     );
 };
-
 
 export default function App() {
     const [view, setView] = useState('landing');
