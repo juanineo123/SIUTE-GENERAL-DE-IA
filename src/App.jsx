@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BrainCircuit, FileText, CheckSquare, Users, GitMerge, Zap, ArrowRight, X, Loader2, Code } from 'lucide-react';
+// He mantenido la importación del nuevo icono CalendarDays
+import { BrainCircuit, FileText, CheckSquare, Users, GitMerge, Zap, ArrowRight, X, Loader2, Code, CalendarDays } from 'lucide-react';
 
 // --- Global Styles for Animations (Sin cambios) ---
 const GlobalStyles = () => (
@@ -70,12 +71,11 @@ const Header = () => (
     </header>
 );
 
-// ***** MODIFICACIÓN 1: El componente ahora acepta una clase para el fondo de la tarjeta *****
+// ***** CUIDADO 1: He restaurado TU versión del componente que acepta los colores *****
 const IframeModuleCard = ({ icon, title, description, onClick, disabled = false, iconColor = 'bg-indigo-100 text-indigo-600', hoverBorderColor = 'hover:border-indigo-500', cardBgColor = 'bg-white' }) => (
     <button
         onClick={onClick}
         disabled={disabled}
-        // ***** Se aplican los colores de fondo y borde *****
         className={`group block h-full rounded-xl border p-6 text-center shadow-md transition-all duration-300 ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-100' : `${cardBgColor} ${hoverBorderColor} hover:shadow-xl hover:-translate-y-1`}`}
     >
         <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${disabled ? 'bg-gray-200 text-gray-500' : iconColor}`}>
@@ -93,7 +93,7 @@ const IframeModuleCard = ({ icon, title, description, onClick, disabled = false,
 
 
 const Dashboard = ({ setView }) => {
-    // ***** MODIFICACIÓN 2: Se añade 'cardBgColor' a cada herramienta con un color suave *****
+    // ***** CUIDADO 2: He restaurado los colores para cada herramienta Y he añadido uno nuevo para el generador anual *****
     const tools = [
         { id: 1, title: "Generador de Sesiones", description: "Crea sesiones de aprendizaje completas.", url: "https://glistening-starlight-1588bf.netlify.app/", icon: <BrainCircuit size={32} />, iconColor: "bg-sky-100 text-sky-600", hoverBorderColor: "hover:border-sky-500", cardBgColor: "bg-sky-50" },
         { id: 2, title: "Generador de Unidades", description: "Elabora unidades de aprendizaje estructuradas.", url: "https://vocal-cendol-d4bf47.netlify.app/", icon: <FileText size={32} />, iconColor: "bg-emerald-100 text-emerald-600", hoverBorderColor: "hover:border-emerald-500", cardBgColor: "bg-emerald-50" },
@@ -101,6 +101,8 @@ const Dashboard = ({ setView }) => {
         { id: 4, title: "Generador de Solicitudes", description: "Redacta documentos administrativos.", url: "https://fancy-profiterole-01445b.netlify.app/", icon: <FileText size={32} />, iconColor: "bg-rose-100 text-rose-600", hoverBorderColor: "hover:border-rose-500", cardBgColor: "bg-rose-50" },
         { id: 5, title: "Solucionador de Conflictos", description: "Asistente para mediación de conflictos.", url: "https://elegant-duckanoo-d702fe.netlify.app/", icon: <Users size={32} />, iconColor: "bg-violet-100 text-violet-600", hoverBorderColor: "hover:border-violet-500", cardBgColor: "bg-violet-50" },
         { id: 6, title: "Proyectos Integrados", description: "Define proyectos basados en tu realidad local.", url: "https://jocular-concha-e30cbd.netlify.app/", icon: <GitMerge size={32} />, iconColor: "bg-teal-100 text-teal-600", hoverBorderColor: "hover:border-teal-500", cardBgColor: "bg-teal-50" },
+        // ***** ASÍ ES COMO SE INTEGRA EL NUEVO GENERADOR CON SU PROPIO COLOR *****
+        { id: 7, title: "Generador de Programación anual", description: "Planifica todo tu año escolar curricular.", url: "https://unrivaled-unicorn-fe7373.netlify.app/", icon: <CalendarDays size={32} />, iconColor: "bg-fuchsia-100 text-fuchsia-600", hoverBorderColor: "hover:border-fuchsia-500", cardBgColor: "bg-fuchsia-50" },
     ];
 
     return (
@@ -110,6 +112,7 @@ const Dashboard = ({ setView }) => {
 
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {tools.map(tool => (
+                    // ***** CUIDADO 3: Me aseguro de pasar las propiedades de color al componente *****
                     <IframeModuleCard
                         key={tool.id}
                         icon={tool.icon}
@@ -121,12 +124,7 @@ const Dashboard = ({ setView }) => {
                         cardBgColor={tool.cardBgColor}
                     />
                 ))}
-                <IframeModuleCard
-                    icon={<Zap size={32} />}
-                    title="Próximamente"
-                    description="Aquí irá el generador más potente. En desarrollo."
-                    disabled
-                />
+                {/* ***** CUIDADO 4: He dejado solo UN bloque de "Próximamente" como pediste ***** */}
                  <IframeModuleCard
                     icon={<Zap size={32} />}
                     title="Próximamente"
@@ -138,11 +136,10 @@ const Dashboard = ({ setView }) => {
     );
 };
 
-// --- El resto del código permanece exactamente igual ---
-
 const IframeView = ({ url, setView }) => {
     const [loading, setLoading] = useState(true);
     const getToolTitle = (currentUrl) => {
+        // ***** CUIDADO 5: He añadido el nuevo generador aquí también para que su título aparezca en la ventana *****
         const toolMap = {
             "https://glistening-starlight-1588bf.netlify.app/": "Generador de Sesiones",
             "https://vocal-cendol-d4bf47.netlify.app/": "Generador de Unidades",
@@ -150,6 +147,7 @@ const IframeView = ({ url, setView }) => {
             "https://fancy-profiterole-01445b.netlify.app/": "Generador de Solicitudes",
             "https://elegant-duckanoo-d702fe.netlify.app/": "Solucionador de Conflictos",
             "https://jocular-concha-e30cbd.netlify.app/": "Proyectos Integrados",
+            "https://unrivaled-unicorn-fe7373.netlify.app/": "Generador de Programación anual",
         };
         return toolMap[currentUrl] || "Herramienta";
     };
