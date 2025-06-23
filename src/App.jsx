@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient.js';
 // He mantenido la importación del nuevo icono CalendarDays
 import { BrainCircuit, FileText, CheckSquare, Users, GitMerge, Zap, ArrowRight, X, Loader2, Code, CalendarDays } from 'lucide-react';
 
-// --- Global Styles for Animations (Sin cambios) ---
+// --- Global Styles for Animations (CORREGIDO) ---
 const GlobalStyles = () => (
   <style>{`
     @keyframes fade-in-down {
@@ -21,7 +21,7 @@ const GlobalStyles = () => (
       animation: fade-in-down 0.8s ease-out forwards;
     }
   `}</style>
-);
+); // <--- ¡AQUÍ ESTABA LA LLAVE DE CIERRE QUE FALTABA!
 
 
 // --- Helper & General Components ---
@@ -41,7 +41,7 @@ const WelcomePage = ({ onEnter }) => (
                 <p className="mt-4 text-lg md::text-xl text-gray-700 leading-relaxed animate-fade-in-down" style={{ animationDelay: '0.6s' }}>
                     Nuestro compromiso es seguir mejorando e implementando nuevas funcionalidades mes a mes, escuchando siempre las necesidades de la comunidad educativa. Juntos, estamos construyendo el futuro de la educación en el Perú.
                 </p>
-                <div className="animate-fade-in-down" style={{ animationDelay: '0.8s' }>
+                <div className="animate-fade-in-down" style={{ animationDelay: '0.8s' }}>
                   <button
                       onClick={onEnter}
                       className="group mt-12 inline-flex items-center gap-3 rounded-full bg-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:bg-indigo-700 hover:shadow-2xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300"
