@@ -190,24 +190,22 @@ export default function App() {
 
     // Función para manejar el cierre de sesión
     const handleLogout = async () => {
-        console.log("Diagnóstico (App.jsx - handleLogout): Intentando cerrar sesión.");
+        console.log("Diagnóstico (App.jsx - handleLogout): Intentando cerrar sesión con signOut().");
         
         try {
-            // Usamos deleteSession() para limpiar la sesión del lado del cliente.
-            // Esto evita la llamada al endpoint de logout que da 403.
-            // La redirección luego será manejada por AuthGate.
-            const { error } = await supabase.auth.deleteSession(); 
+            const { error } = await supabase.auth.signOut(); // Volvemos a usar signOut()
 
             if (error) {
-                console.error("Error al limpiar sesión local:", error.message);
-                alert("Error al cerrar sesión local: " + error.message); 
+                console.error("Error al cerrar sesión:", error.message, error); // Registra el error completo
+                alert("Error al cerrar sesión: " + error.message); // Considerar un modal personalizado en producción
             } else {
-                console.log("Sesión local limpiada exitosamente. AuthGate redirigirá.");
-                // No redirigimos aquí. AuthGate en main.jsx detectará la falta de sesión y redirigirá.
+                console.log("Sesión cerrada exitosamente. Redirigiendo a /login.html.");
+                // Redirigir a la página de login después de cerrar sesión
+                window.location.href = '/login.html'; 
             }
         } catch (e) {
-            console.error("Excepción durante el cierre de sesión (deleteSession):", e);
-            alert("Ocurrió un error inesperado al cerrar sesión."); 
+            console.error("Excepción durante el cierre de sesión (signOut):", e); // Captura excepciones inesperadas
+            alert("Ocurrió un error inesperado al cerrar sesión."); // Considerar un modal personalizado en producción
         }
     };
 

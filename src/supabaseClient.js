@@ -11,19 +11,23 @@ console.log("  Key Supabase usada:", supabaseKey ? "Cargada (no se muestra por s
 // Creamos y exportamos el cliente de Supabase
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    // Esto asegura que Supabase persista la sesión en localStorage (más robusto que cookies para SPAs en algunos entornos)
+    // Usamos localStorage para la persistencia del token de sesión.
+    // Esto es generalmente más estable para SPAs que solo las cookies,
+    // especialmente cuando se involucran subdominios o configuraciones de proxy.
     storage: localStorage, 
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true, // Importante para detectar sesiones en la URL de callback
-    // Configuración para las cookies, si Supabase las usa internamente o para otros fines
-    // 'Lax' es el valor por defecto y más seguro para la mayoría de casos
-    // 'None' es más permisivo (requiere secure: true) pero puede tener implicaciones de seguridad
+    detectSessionInUrl: true, 
+    
+    // *** CONFIGURACIÓN CLAVE PARA EL CIERRE DE SESIÓN EN PRODUCCIÓN ***
+    // Estas opciones afectan cómo Supabase gestiona las cookies de sesión.
+    // 'SameSite: None' es necesario para que las cookies se envíen en peticiones cross-site (tu Netlify a la API de Supabase).
+    // 'Secure: true' es OBLIGATORIO cuando SameSite es 'None'. Tu sitio de Netlify ya es HTTPS.
     cookieOptions: {
       name: 'sb', // Nombre de la cookie de Supabase
-      maxAge: 60 * 60 * 24 * 365, // 1 año
-      sameSite: 'Lax', // O 'Strict', o 'None' (con secure: true)
-      secure: true // Esencial para 'None' y recomendado siempre en HTTPS
+      maxAge: 60 * 60 * 24 * 365, // 1 año de duración
+      sameSite: 'None', // Permite que la cookie se envíe en solicitudes de terceros (cross-site)
+      secure: true // SOLO se envía la cookie a través de HTTPS (obligatorio con SameSite: 'None')
     }
   }
 });
