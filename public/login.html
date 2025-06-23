@@ -123,39 +123,68 @@
                     
                     <input type="email" id="email" placeholder="Correo electrónico" />
                     <input type="password" id="password" placeholder="Contraseña" />
+                    
                     <button id="login-button">Iniciar Sesión</button>
                     <!-- Elemento para mostrar mensajes de error directamente en la página -->
                     <p id="login-error-message" style="color: red; margin-top: 10px;"></p>
+
+                    <!-- Nuevos elementos para la funcionalidad de Registro -->
+                    <p style="margin-top: 20px; font-size: 14px; color: #555;">
+                        ¿No tienes una cuenta? <a href="#" id="toggle-to-register" style="color: #007bff; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
+                    </p>
+                    <button id="register-button" style="display: none; margin-top: 10px;">Registrarse</button>
+                    <p id="register-error-message" style="color: red; margin-top: 10px;"></p>
+                    <p style="margin-top: 10px; font-size: 14px; color: #555; display: none;" id="toggle-to-login-message">
+                        ¿Ya tienes una cuenta? <a href="#" id="toggle-to-login" style="color: #007bff; text-decoration: none; font-weight: bold;">Inicia Sesión</a>
+                    </p>
                 </div>
 
-                <!-- Eliminamos el div user-view de aquí, su lógica y botón de cerrar sesión se moverán a la suite -->
                 <div id="user-view" style="display: none;"></div> 
             </div>
         </div>
     </div>
 
     <script type="module">
+        // Importamos el cliente de Supabase desde la CDN
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
         console.log("Diagnóstico (login.html): Script de módulo iniciado.");
 
+        // Tus claves de Supabase. NO las cambies, ya que Canvas las inyecta en runtime.
         const SUPABASE_URL = "https://inifpgfipwdbmirxqrhq.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluaWZwZ2ZpcHdkYm1pcnhxcmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2Mzk4MjgsImV4cCI6MjA2NjIxNTgyOH0.6-qoWCcNp1pq_LSLWFIDjErJdk4zVU3s-ixyqbpkq0Q";
 
+        // Inicializamos el cliente de Supabase
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log("Diagnóstico (login.html): Cliente de Supabase inicializado.");
 
+        // Obtenemos referencias a los elementos del DOM
         const loginButton = document.getElementById('login-button');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const loginErrorMessage = document.getElementById('login-error-message');
+        const registerButton = document.getElementById('register-button');
+        const authView = document.getElementById('auth-view'); // El contenedor de email/password/botones
+        const toggleToRegisterLink = document.getElementById('toggle-to-register');
+        const toggleToLoginLink = document.getElementById('toggle-to-login');
+        const toggleToLoginMessage = document.getElementById('toggle-to-login-message');
+        const registerErrorMessage = document.getElementById('register-error-message');
 
+        // Función para mostrar mensajes de error de login
         function showErrorMessage(message) {
             if (loginErrorMessage) {
                 loginErrorMessage.textContent = message;
             }
         }
 
+        // Función para mostrar mensajes de error de registro
+        function showRegisterErrorMessage(message) {
+            if (registerErrorMessage) {
+                registerErrorMessage.textContent = message;
+            }
+        }
+
+        // --- Lógica para el Inicio de Sesión ---
         if (loginButton) {
             loginButton.addEventListener('click', async () => {
                 console.log("Botón 'Iniciar Sesión' clicado.");
@@ -167,15 +196,140 @@
                     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) {
                         console.error('Error de autenticación Supabase:', error.message, error);
-                        showErrorMessage('Error: ' + error.message);
+                        // Mensajes más amigables para el usuario
+                        if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+                            showErrorMessage('Correo o contraseña incorrectos, o correo no confirmado.');
+                        } else {
+                            showErrorMessage('Error al iniciar sesión: ' + error.message);
+                        }
                     } else {
                         console.log('Login exitoso:', data);
-                        window.location.href = '/'; 
+                        window.location.href = '/'; // Redirigir a la suite principal
                     }
                 } catch (e) {
                     console.error('Excepción inesperada durante el inicio de sesión:', e);
                     showErrorMessage('Error inesperado durante el inicio de sesión. Intente de nuevo.');
                 }
+            });
+        }
+
+        // --- LÓGICA PARA EL REGISTRO DE USUARIOS Y PRUEBA GRATUITA ---
+        if (registerButton) {
+            registerButton.addEventListener('click', async () => {
+                console.log("Botón 'Registrarse' clicado.");
+                showRegisterErrorMessage(''); // Limpiar errores anteriores
+                const email = emailInput.value;
+                const password = passwordInput.value;
+
+                // Validaciones básicas de entrada
+                if (!email || !password) {
+                    showRegisterErrorMessage('Por favor, ingresa un correo y una contraseña.');
+                    return;
+                }
+                if (password.length < 6) {
+                    showRegisterErrorMessage('La contraseña debe tener al menos 6 caracteres.');
+                    return;
+                }
+
+                try {
+                    // 1. Intentar registrar el usuario con Supabase Auth
+                    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+
+                    if (authError) {
+                        console.error('Error al registrar usuario en Supabase Auth:', authError.message, authError);
+                        // Mensajes de error más específicos para el usuario
+                        if (authError.message.includes('duplicate key value violates unique constraint "users_email_key"')) {
+                            showRegisterErrorMessage('Este correo ya está registrado.');
+                        } else {
+                            showRegisterErrorMessage('Error al registrarse: ' + authError.message);
+                        }
+                        return;
+                    }
+
+                    // Si el registro fue exitoso (o si el usuario ya existe y se le ha enviado un correo de confirmación)
+                    if (authData.user) {
+                        console.log('Usuario registrado/confirmado o sesión iniciada:', authData.user);
+                        
+                        // 2. Calcular las fechas de la prueba gratuita
+                        const fechaInicioPrueba = new Date();
+                        const fechaFinPrueba = new Date();
+                        fechaFinPrueba.setDate(fechaInicioPrueba.getDate() + 15); // Añadir 15 días a la fecha actual
+
+                        // 3. Insertar el perfil del usuario en la tabla 'perfiles'
+                        // Usamos el id del usuario de Supabase Auth (authData.user.id)
+                        const { data: profileData, error: profileError } = await supabase
+                            .from('perfiles')
+                            .insert([
+                                {
+                                    id: authData.user.id,
+                                    email: authData.user.email,
+                                    // Si tu tabla 'perfiles' tiene 'nombre_completo'
+                                    // y no lo recoges en el formulario, puedes omitirlo o darle un valor por defecto.
+                                    // full_name: 'Usuario Nuevo', 
+                                    fecha_registro: fechaInicioPrueba.toISOString(),
+                                    fecha_inicio_prueba: fechaInicioPrueba.toISOString(),
+                                    fecha_fin_prueba: fechaFinPrueba.toISOString(),
+                                    es_miembro_activo: true, // TRUE por la prueba gratuita inicial
+                                    // Las otras columnas de membresía (id_suscripcion_externa, fecha_ultimo_pago, fecha_proximo_pago)
+                                    // se dejarán nulas por defecto, ya que solo aplican a miembros de pago.
+                                }
+                            ]);
+
+                        if (profileError) {
+                            console.error('Error al insertar perfil en Supabase DB:', profileError.message, profileError);
+                            showRegisterErrorMessage('Error al completar el registro. Intente de nuevo.');
+                            // Aquí podrías considerar una lógica de rollback si la inserción del perfil es crítica.
+                            // Por ahora, solo mostramos el error.
+                        } else {
+                            console.log('Perfil de usuario creado exitosamente con prueba gratuita:', profileData);
+                            // Si Supabase Auth requiere confirmación de email (común por defecto)
+                            if (authData.user && !authData.session) {
+                                alert('¡Registro exitoso! Por favor, revisa tu correo electrónico para confirmar tu cuenta y luego inicia sesión.');
+                            } else {
+                                // Si no se requiere confirmación (ej. Magic Link, o ya estaba verificado)
+                                alert('¡Registro exitoso! Ya tienes 15 días de prueba gratis. Redirigiendo a la suite.');
+                                window.location.href = '/'; // Redirigir a la suite principal
+                            }
+                        }
+                    } else {
+                        // Este caso puede darse si authData.user es nulo pero no hay error,
+                        // lo que a menudo indica que Supabase ha enviado un email de confirmación.
+                         alert('¡Registro exitoso! Por favor, revisa tu correo electrónico para confirmar tu cuenta y luego inicia sesión.');
+                    }
+
+                } catch (e) {
+                    console.error('Excepción inesperada durante el registro:', e);
+                    showRegisterErrorMessage('Error inesperado durante el registro. Intente de nuevo.');
+                }
+            });
+        }
+
+        // --- Lógica para alternar vistas (Login/Registro) ---
+        if (toggleToRegisterLink) {
+            toggleToRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Evita que el enlace recargue la página
+                loginButton.style.display = 'none'; // Oculta el botón de login
+                registerButton.style.display = 'block'; // Muestra el botón de registro
+                showErrorMessage(''); // Limpiar mensajes de login
+                showRegisterErrorMessage(''); // Limpiar mensajes de registro
+                toggleToRegisterLink.parentElement.style.display = 'none'; // Ocultar mensaje "¿No tienes cuenta?"
+                toggleToLoginMessage.style.display = 'block'; // Mostrar mensaje "¿Ya tienes cuenta?"
+                authView.querySelector('h3').textContent = 'Crear Cuenta'; // Cambiar título
+                authView.querySelector('.subtitle').textContent = 'Regístrate para obtener 15 días de prueba gratis.'; // Cambiar subtítulo
+            });
+        }
+
+        if (toggleToLoginLink) {
+            toggleToLoginLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Evita que el enlace recargue la página
+                loginButton.style.display = 'block'; // Muestra el botón de login
+                registerButton.style.display = 'none'; // Oculta el botón de registro
+                showErrorMessage(''); // Limpiar mensajes de login
+                showRegisterErrorMessage(''); // Limpiar mensajes de registro
+                toggleToRegisterLink.parentElement.style.display = 'block'; // Mostrar mensaje "¿No tienes cuenta?"
+                toggleToLoginMessage.style.display = 'none'; // Ocultar mensaje "¿Ya tienes cuenta?"
+                authView.querySelector('h3').textContent = 'Central del Docente Innovador'; // Restaurar título
+                authView.querySelector('.subtitle').textContent = 'Genera tu sesión, documentos, y miles de cosas más.'; // Restaurar subtítulo
             });
         }
 
