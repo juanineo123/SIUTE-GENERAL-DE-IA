@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient.js';
 // He mantenido la importación del nuevo icono CalendarDays
 import { BrainCircuit, FileText, CheckSquare, Users, GitMerge, Zap, ArrowRight, X, Loader2, Code, CalendarDays } from 'lucide-react';
 
-// --- Global Styles for Animations (CORREGIDO) ---
+// --- Global Styles for Animations (Sin cambios) ---
 const GlobalStyles = () => (
   <style>{`
     @keyframes fade-in-down {
@@ -21,7 +21,7 @@ const GlobalStyles = () => (
       animation: fade-in-down 0.8s ease-out forwards;
     }
   `}</style>
-); // <--- ¡AQUÍ ESTABA LA LLAVE DE CIERRE QUE FALTABA!
+);
 
 
 // --- Helper & General Components ---
@@ -190,33 +190,24 @@ export default function App() {
 
     // Función para manejar el cierre de sesión
     const handleLogout = async () => {
-        // --- NUEVO DIAGNÓSTICO: Inspeccionar la sesión antes del logout ---
         console.log("Diagnóstico (App.jsx - handleLogout): Intentando cerrar sesión.");
-        const { data: { session }, error: getSessionError } = await supabase.auth.getSession();
-        if (getSessionError) {
-            console.error("Diagnóstico (App.jsx - handleLogout): Error al obtener sesión antes del logout:", getSessionError.message);
-            // Si hay un error al obtener la sesión aquí, podría indicar que el cliente no tiene contexto.
-        } else {
-            console.log("Diagnóstico (App.jsx - handleLogout): Sesión actual detectada:", session);
-            if (!session) {
-                console.warn("Diagnóstico (App.jsx - handleLogout): ¡No hay sesión en el cliente de Supabase React ANTES de llamar a signOut!");
-            }
-        }
-        // --- FIN NUEVO DIAGNÓSTICO ---
-
+        
         try {
-            const { error } = await supabase.auth.signOut();
+            // Usamos deleteSession() para limpiar la sesión del lado del cliente.
+            // Esto evita la llamada al endpoint de logout que da 403.
+            // La redirección luego será manejada por AuthGate.
+            const { error } = await supabase.auth.deleteSession(); 
+
             if (error) {
-                console.error("Error al cerrar sesión:", error.message);
-                alert("Error al cerrar sesión: " + error.message); // Considerar un modal personalizado en producción
+                console.error("Error al limpiar sesión local:", error.message);
+                alert("Error al cerrar sesión local: " + error.message); 
             } else {
-                console.log("Sesión cerrada exitosamente.");
-                // Redirigir a la página de login después de cerrar sesión
-                window.location.href = '/login.html'; 
+                console.log("Sesión local limpiada exitosamente. AuthGate redirigirá.");
+                // No redirigimos aquí. AuthGate en main.jsx detectará la falta de sesión y redirigirá.
             }
         } catch (e) {
-            console.error("Excepción durante el cierre de sesión:", e);
-            alert("Ocurrió un error inesperado al cerrar sesión."); // Considerar un modal personalizado en producción
+            console.error("Excepción durante el cierre de sesión (deleteSession):", e);
+            alert("Ocurrió un error inesperado al cerrar sesión."); 
         }
     };
 
