@@ -12,7 +12,7 @@ const GlobalStyles = () => (
         opacity: 0;
         transform: translateY(-20px);
       }
-      100% {\
+      100% {
         opacity: 1;
         transform: translateY(0);
       }
@@ -38,10 +38,10 @@ const WelcomePage = ({ onEnter }) => (
                 <p className="mt-6 text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in-down" style={{ animationDelay: '0.4s' }}>
                     Bienvenido a una colección de herramientas diseñadas por y para docentes, con el objetivo de revolucionar nuestra labor diaria. Todos estos generadores son de **uso gratuito** y se encuentran en su **versión 1.0**.
                 </p>
-                <p className="mt-4 text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in-down" style={{ animationDelay: '0.6s' }}>
+                <p className="mt-4 text-lg md::text-xl text-gray-700 leading-relaxed animate-fade-in-down" style={{ animationDelay: '0.6s' }}>
                     Nuestro compromiso es seguir mejorando e implementando nuevas funcionalidades mes a mes, escuchando siempre las necesidades de la comunidad educativa. Juntos, estamos construyendo el futuro de la educación en el Perú.
                 </p>
-                <div className="animate-fade-in-down" style={{ animationDelay: '0.8s' }}>
+                <div className="animate-fade-in-down" style={{ animationDelay: '0.8s' }>
                   <button
                       onClick={onEnter}
                       className="group mt-12 inline-flex items-center gap-3 rounded-full bg-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:bg-indigo-700 hover:shadow-2xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300"
@@ -190,12 +190,25 @@ export default function App() {
 
     // Función para manejar el cierre de sesión
     const handleLogout = async () => {
+        // --- NUEVO DIAGNÓSTICO: Inspeccionar la sesión antes del logout ---
+        console.log("Diagnóstico (App.jsx - handleLogout): Intentando cerrar sesión.");
+        const { data: { session }, error: getSessionError } = await supabase.auth.getSession();
+        if (getSessionError) {
+            console.error("Diagnóstico (App.jsx - handleLogout): Error al obtener sesión antes del logout:", getSessionError.message);
+            // Si hay un error al obtener la sesión aquí, podría indicar que el cliente no tiene contexto.
+        } else {
+            console.log("Diagnóstico (App.jsx - handleLogout): Sesión actual detectada:", session);
+            if (!session) {
+                console.warn("Diagnóstico (App.jsx - handleLogout): ¡No hay sesión en el cliente de Supabase React ANTES de llamar a signOut!");
+            }
+        }
+        // --- FIN NUEVO DIAGNÓSTICO ---
+
         try {
             const { error } = await supabase.auth.signOut();
             if (error) {
                 console.error("Error al cerrar sesión:", error.message);
-                // Podrías mostrar una alerta o un mensaje en la UI aquí
-                alert("Error al cerrar sesión: " + error.message); // Usar un modal personalizado en producción
+                alert("Error al cerrar sesión: " + error.message); // Considerar un modal personalizado en producción
             } else {
                 console.log("Sesión cerrada exitosamente.");
                 // Redirigir a la página de login después de cerrar sesión
@@ -203,7 +216,7 @@ export default function App() {
             }
         } catch (e) {
             console.error("Excepción durante el cierre de sesión:", e);
-            alert("Ocurrió un error inesperado al cerrar sesión."); // Usar un modal personalizado en producción
+            alert("Ocurrió un error inesperado al cerrar sesión."); // Considerar un modal personalizado en producción
         }
     };
 
