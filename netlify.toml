@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Permitir que el login.html se sirva directamente.
+# No necesitamos redirecciones específicas para el si la app React lo maneja.
+
+# Esta regla es CRUCIAL y le dice a Netlify que, para CUALQUIER otra ruta (incluyendo la raíz '/')
+# sirva el index.html de tu aplicación React.
+# Tu AuthGate en main.jsx se encargará de redirigir a login.html si no hay sesión.
+# Esto asegura que tu SPA siempre sea el punto de entrada para manejar el estado de autenticación.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

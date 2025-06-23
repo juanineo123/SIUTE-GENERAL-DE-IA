@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso a Suite de Generadores</title>
+    
+    <style>
+        /* Reseteo básico y configuración de la fuente */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        /* Contenedor principal que divide la pantalla */
+        .split-screen-container {
+            display: flex;
+            height: 100%;
+        }
+
+        /* Panel izquierdo con la imagen de fondo */
+        .image-panel {
+            flex: 1; /* Ocupa la mitad del espacio */
+            background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjyhTT1gS0RusA4OUqswzXZGOymX6kSOogSwYMJbWG70Kumc7cvpzGE8dcn-jZHhPEQeImQmYgGjexsouA0Mfw_DvF3UH6naLK0UjYR9f7oTD-Of7ei9DU5j6gFPIRzU4-PFDfwfHERTk8cxERTEJYvrQJ4n1PeB2tS4sfYDusc764uOUWFrYt5N1Ht5HBk/s2048/Gemini_Generated_Image_8eb0hl8eb0hl8eb0.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Panel derecho con el formulario */
+        .form-panel {
+            flex: 1; /* Ocupa la otra mitad */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* El contenedor del formulario en sí */
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .form-container h3 {
+            margin-top: 0;
+            font-size: 28px;
+            color: #333;
+        }
+
+        /* El texto que solicitaste, añadido como subtítulo */
+        .form-container .subtitle {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        /* Ocultamos la vista de usuario, ya que el cierre de sesión se moverá */
+        #user-view {
+            display: none; /* Este div ahora no se usará en login.html */
+        }
+
+        /* Soporte para celulares */
+        @media (max-width: 768px) {
+            .split-screen-container {
+                flex-direction: column;
+            }
+
+            .image-panel {
+                flex: none;
+                height: 200px;
+            }
+
+            .form-panel {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="split-screen-container">
+        
+        <div class="image-panel"></div>
+
+        <div class="form-panel">
+            <div class="form-container">
+                
+                <div id="auth-view">
+                    <h3>Central del Docente Innovador</h3>
+                    <p class="subtitle">Genera tu sesión, documentos, y miles de cosas más.</p>
+                    
+                    <input type="email" id="email" placeholder="Correo electrónico" />
+                    <input type="password" id="password" placeholder="Contraseña" />
+                    <button id="login-button">Iniciar Sesión</button>
+                    <!-- Elemento para mostrar mensajes de error directamente en la página -->
+                    <p id="login-error-message" style="color: red; margin-top: 10px;"></p>
+                </div>
+
+                <!-- Eliminamos el div user-view de aquí, su lógica y botón de cerrar sesión se moverán a la suite -->
+                <div id="user-view" style="display: none;"></div> 
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        console.log("Diagnóstico (login.html): Script de módulo iniciado.");
+
+        const SUPABASE_URL = "https://inifpgfipwdbmirxqrhq.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluaWZwZ2ZpcHdkYm1pcnhxcmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2Mzk4MjgsImV4cCI6MjA2NjIxNTgyOH0.6-qoWCcNp1pq_LSLWFIDjErJdk4zVU3s-ixyqbpkq0Q";
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Diagnóstico (login.html): Cliente de Supabase inicializado.");
+
+        const loginButton = document.getElementById('login-button');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginErrorMessage = document.getElementById('login-error-message');
+
+        function showErrorMessage(message) {
+            if (loginErrorMessage) {
+                loginErrorMessage.textContent = message;
+            }
+        }
+
+        if (loginButton) {
+            loginButton.addEventListener('click', async () => {
+                console.log("Botón 'Iniciar Sesión' clicado.");
+                showErrorMessage(''); // Limpiar errores anteriores
+                const email = emailInput.value;
+                const password = passwordInput.value;
+
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) {
+                        console.error('Error de autenticación Supabase:', error.message, error);
+                        showErrorMessage('Error: ' + error.message);
+                    } else {
+                        console.log('Login exitoso:', data);
+                        window.location.href = '/'; 
+                    }
+                } catch (e) {
+                    console.error('Excepción inesperada durante el inicio de sesión:', e);
+                    showErrorMessage('Error inesperado durante el inicio de sesión. Intente de nuevo.');
+                }
+            });
+        }
+
+        // Función para verificar sesión al cargar la página y redirigir si el usuario ya está logueado.
+        const checkUserAndRedirect = async () => {
+            console.log("Función checkUserAndRedirect llamada en login.html.");
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    console.log("Sesión detectada en login.html, redirigiendo a /.");
+                    window.location.href = '/'; // Si ya está logueado, lo enviamos a la suite
+                } else {
+                    console.log("No hay sesión en login.html, permaneciendo en la página de login.");
+                }
+            } catch (e) {
+                console.error("Excepción en checkUserAndRedirect:", e);
+                // Si hay un error al obtener la sesión, asumimos que no hay sesión y permanecemos en el login.
+            }
+        };
+
+        // Ejecutar al cargar y escuchar cambios de autenticación
+        document.addEventListener('DOMContentLoaded', checkUserAndRedirect);
+        supabase.auth.onAuthStateChange((_event, session) => { 
+            // Si el evento es un LOGOUT, nos aseguramos de que no redirija de nuevo a la suite
+            if (_event === 'SIGNED_OUT') {
+                console.log("Cierre de sesión detectado en login.html. Permanece aquí.");
+                // No hacemos nada, el usuario ya está en login.html o será redirigido aquí por AuthGate
+            } else {
+                checkUserAndRedirect(); 
+            }
+        });
+    </script>
+
+</body>
+</html>
